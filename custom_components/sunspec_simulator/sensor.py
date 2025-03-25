@@ -2,24 +2,25 @@
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.core import HomeAssistant
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.event import async_track_time_interval
 import datetime
 import random
 
 DOMAIN = "sunspec_simulator"
 
-async def async_setup_sensors(hass: HomeAssistant, config: dict):
+async def async_setup_entry(
+    hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
+):
     """Set up the SunSpec simulator sensors."""
     sensors = [
-        SunSpecPowerSensor(hass),
-        SunSpecVoltageSensor(hass),
-        SunSpecStatusSensor(hass)
+        SunSpecPowerSensor(),
+        SunSpecVoltageSensor(),
+        SunSpecStatusSensor()
     ]
     
-    # 註冊實體
-    hass.async_create_task(
-        hass.helpers.entity_platform.async_get_current_platform().async_add_entities(sensors)
-    )
+    async_add_entities(sensors, update_before_add=True)
 
     # 每30秒更新一次數據
     async_track_time_interval(hass, lambda now: update_sensors(sensors), datetime.timedelta(seconds=30))
@@ -31,9 +32,8 @@ def update_sensors(sensors):
 
 class SunSpecPowerSensor(SensorEntity):
     """SunSpec Power Sensor."""
-    def __init__(self, hass):
+    def __init__(self):
         self._state = None
-        self._hass = hass
         self._attr_unique_id = "sunspec_simulator_power"
         self._attr_device_class = "power"
 
@@ -56,12 +56,12 @@ class SunSpecPowerSensor(SensorEntity):
     async def async_update(self):
         """Simulate power data."""
         self._state = random.uniform(50, 500)  # 假功率50-500W
+        self.async_write_ha_state()
 
 class SunSpecVoltageSensor(SensorEntity):
     """SunSpec Voltage Sensor."""
-    def __init__(self, hass):
+    def __init__(self):
         self._state = None
-        self._hass = hass
         self._attr_unique_id = "sunspec_simulator_voltage"
         self._attr_device_class = "voltage"
 
@@ -84,12 +84,12 @@ class SunSpecVoltageSensor(SensorEntity):
     async def async_update(self):
         """Simulate voltage data."""
         self._state = random.uniform(220, 240)  # 假電壓220-240V
+        self.async_write_ha_state()
 
 class SunSpecStatusSensor(BinarySensorEntity):
     """SunSpec Status Sensor."""
-    def __init__(self, hass):
+    def __init__(self):
         self._state = None
-        self._hass = hass
         self._attr_unique_id = "sunspec_simulator_status"
 
     @property
@@ -107,3 +107,4 @@ class SunSpecStatusSensor(BinarySensorEntity):
     async def async_update(self):
         """Simulate status data."""
         self._state = random.choice([True, False])  # 假狀態：運行或關閉
+        self.async_write_ha_state()
