@@ -1,4 +1,4 @@
-"""SunSpec Simulator Sensors with Notification."""
+"""SunSpec Simulator Sensors."""
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.core import HomeAssistant
@@ -22,7 +22,7 @@ def setup_sunspec_sensors(hass: HomeAssistant):
     async_track_time_interval(hass, lambda now: update_sensors(hass, power_sensor, voltage_sensor, status_sensor), datetime.timedelta(seconds=30))
 
 def update_sensors(hass: HomeAssistant, power_sensor, voltage_sensor, status_sensor):
-    """Update all sensors and notify if power is low."""
+    """Update all sensors."""
     power_sensor.update()
     voltage_sensor.update()
     status_sensor.update()
@@ -30,15 +30,6 @@ def update_sensors(hass: HomeAssistant, power_sensor, voltage_sensor, status_sen
     hass.states.set(f"sensor.{DOMAIN}_power", power_sensor.state, power_sensor.attributes)
     hass.states.set(f"sensor.{DOMAIN}_voltage", voltage_sensor.state, voltage_sensor.attributes)
     hass.states.set(f"binary_sensor.{DOMAIN}_status", status_sensor.state, status_sensor.attributes)
-    
-    if power_sensor.state < 100:  # 模擬功率低於100W時提醒
-        hass.async_create_task(
-            hass.services.async_call(
-                "notify",
-                "mobile_app",
-                {"message": "模擬太陽能功率低啦！假裝檢查設備！", "title": "SunSpec模擬警報"}
-            )
-        )
 
 class SunSpecPowerSensor(SensorEntity):
     """SunSpec Power Sensor."""
