@@ -1,9 +1,9 @@
 {
-    "name": "SunSpec Simulator",
-    "version": "1.0.0",
-    "documentation": "https://github.com/yinchak/home-assistant-sunspec-simulator",
-    "issue_tracker": "https://github.com/yinchak/home-assistant-sunspec-simulator/issues",
-    "dependencies": [],
-    "codeowners": ["@yinchak"],
-    "requirements": []
+  "domain": "sunspec_simulator",
+  "name": "SunSpec Simulator",
+  "version": "1.0.0",
+  "documentation": "https://github.com/yinchak/home-assistant-sunspec-simulator",
+  "dependencies": [],
+  "codeowners": ["@yinchak"],
+  "requirements": []
 }
