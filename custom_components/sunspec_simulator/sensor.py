@@ -8,7 +8,7 @@ import random
 
 DOMAIN = "sunspec_simulator"
 
-async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
+async def async_setup_sensors(hass: HomeAssistant, config: dict):
     """Set up the SunSpec simulator sensors."""
     sensors = [
         SunSpecPowerSensor(hass),
@@ -17,7 +17,9 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
     ]
     
     # 註冊實體
-    async_add_entities(sensors)
+    hass.async_create_task(
+        hass.helpers.entity_platform.async_get_current_platform().async_add_entities(sensors)
+    )
 
     # 每30秒更新一次數據
     async_track_time_interval(hass, lambda now: update_sensors(sensors), datetime.timedelta(seconds=30))
