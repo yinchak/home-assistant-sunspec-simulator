@@ -8,34 +8,31 @@ import random
 
 DOMAIN = "sunspec_simulator"
 
-def setup_sunspec_sensors(hass: HomeAssistant):
+async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
     """Set up the SunSpec simulator sensors."""
     power_sensor = SunSpecPowerSensor(hass)
     voltage_sensor = SunSpecVoltageSensor(hass)
     status_sensor = SunSpecStatusSensor(hass)
     
-    hass.states.set(f"sensor.{DOMAIN}_power", power_sensor.state, power_sensor.attributes)
-    hass.states.set(f"sensor.{DOMAIN}_voltage", voltage_sensor.state, voltage_sensor.attributes)
-    hass.states.set(f"binary_sensor.{DOMAIN}_status", status_sensor.state, status_sensor.attributes)
+    # 註冊實體
+    async_add_entities([power_sensor, voltage_sensor, status_sensor])
 
     # 每30秒更新一次數據
-    async_track_time_interval(hass, lambda now: update_sensors(hass, power_sensor, voltage_sensor, status_sensor), datetime.timedelta(seconds=30))
+    async_track_time_interval(hass, lambda now: update_sensors(power_sensor, voltage_sensor, status_sensor), datetime.timedelta(seconds=30))
 
-def update_sensors(hass: HomeAssistant, power_sensor, voltage_sensor, status_sensor):
+def update_sensors(power_sensor, voltage_sensor, status_sensor):
     """Update all sensors."""
     power_sensor.update()
     voltage_sensor.update()
     status_sensor.update()
-    
-    hass.states.set(f"sensor.{DOMAIN}_power", power_sensor.state, power_sensor.attributes)
-    hass.states.set(f"sensor.{DOMAIN}_voltage", voltage_sensor.state, voltage_sensor.attributes)
-    hass.states.set(f"binary_sensor.{DOMAIN}_status", status_sensor.state, status_sensor.attributes)
+    # 唔使手動用 hass.states.set，因為實體已經註冊，會自動更新
 
 class SunSpecPowerSensor(SensorEntity):
     """SunSpec Power Sensor."""
     def __init__(self, hass):
         self._state = 0
         self._hass = hass
+        self._attr_unique_id = "sunspec_simulator_power"
 
     @property
     def name(self):
@@ -50,7 +47,7 @@ class SunSpecPowerSensor(SensorEntity):
         return "W"
 
     @property
-    def attributes(self):
+    def extra_state_attributes(self):
         return {"friendly_name": "模擬太陽能功率"}
 
     def update(self):
@@ -62,6 +59,7 @@ class SunSpecVoltageSensor(SensorEntity):
     def __init__(self, hass):
         self._state = 0
         self._hass = hass
+        self._attr_unique_id = "sunspec_simulator_voltage"
 
     @property
     def name(self):
@@ -76,7 +74,7 @@ class SunSpecVoltageSensor(SensorEntity):
         return "V"
 
     @property
-    def attributes(self):
+    def extra_state_attributes(self):
         return {"friendly_name": "模擬太陽能電壓"}
 
     def update(self):
@@ -88,6 +86,7 @@ class SunSpecStatusSensor(BinarySensorEntity):
     def __init__(self, hass):
         self._state = False
         self._hass = hass
+        self._attr_unique_id = "sunspec_simulator_status"
 
     @property
     def name(self):
@@ -98,7 +97,7 @@ class SunSpecStatusSensor(BinarySensorEntity):
         return self._state
 
     @property
-    def attributes(self):
+    def extra_state_attributes(self):
         return {"friendly_name": "模擬太陽能狀態"}
 
     def update(self):
