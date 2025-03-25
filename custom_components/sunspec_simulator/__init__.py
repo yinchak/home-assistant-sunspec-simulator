@@ -2,8 +2,6 @@
 from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
 
-from .sensor import async_setup_entry
-
 DOMAIN = "sunspec_simulator"
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
@@ -12,5 +10,5 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up SunSpec Simulator from a config entry."""
-    await async_setup_entry(hass, entry)
+    hass.async_create_task(hass.config_entries.async_forward_entry_setup(entry, "sensor"))
     return True
