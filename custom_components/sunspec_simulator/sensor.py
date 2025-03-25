@@ -1,59 +1,72 @@
 """SunSpec Simulator Sensors."""
 from homeassistant.components.sensor import SensorEntity
+from homeassistant.components.binary_sensor import BinarySensorEntity
+from homeassistant.const import UnitOfPower, UnitOfElectricPotential
 from homeassistant.core import HomeAssistant
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.event import async_track_time_interval
-import datetime
 import random
 
 DOMAIN = "sunspec_simulator"
 
-async def async_setup_platform(hass: HomeAssistant, config, async_add_entities: AddEntitiesCallback, discovery_info=None):
-    """Set up SunSpec simulator sensors."""
-    sensors = [
-        SunSpecSensor("Power", "W", 50, 500),
-        SunSpecSensor("Voltage", "V", 220, 240),
-        SunSpecSensor("Status", None, 0, 1, status=True)
-    ]
-
-    async_add_entities(sensors, update_before_add=True)
-
-    # 每 30 秒更新數據
-    async_track_time_interval(hass, lambda now: update_sensors(sensors), datetime.timedelta(seconds=30))
-
-def update_sensors(sensors):
-    """更新所有 Sensor 狀態"""
-    for sensor in sensors:
-        sensor.async_schedule_update_ha_state(True)
-
-class SunSpecSensor(SensorEntity):
-    """通用 SunSpec Sensor"""
-    def __init__(self, name, unit, min_value, max_value, status=False):
+class SunSpecPowerSensor(SensorEntity):
+    """SunSpec Power Sensor."""
+    def __init__(self, hass: HomeAssistant):
+        self._hass = hass
+        self._attr_unique_id = "sunspec_simulator_power"
+        self._attr_device_class = "power"
+        self._attr_unit_of_measurement = UnitOfPower.WATT
+        self._attr_name = "SunSpec Simulated Power"
         self._state = None
-        self._name = f"SunSpec Simulated {name}"
-        self._unit = unit
-        self._min = min_value
-        self._max = max_value
-        self._status = status
-        self._attr_unique_id = f"sunspec_simulator_{name.lower()}"
-
-    @property
-    def name(self):
-        return self._name
 
     @property
     def state(self):
         return self._state
 
     @property
-    def unit_of_measurement(self):
-        return self._unit
+    def extra_state_attributes(self):
+        return {"friendly_name": "模擬太陽能功率"}
 
     async def async_update(self):
-        """生成模擬數據"""
-        if self._status:
-            self._state = "ON" if random.choice([True, False]) else "OFF"
-        else:
-            self._state = random.uniform(self._min, self._max)
-        self.async_write_ha_state()
+        """Simulate power data."""
+        self._state = random.uniform(50, 500)  # 假功率50-500W
+
+class SunSpecVoltageSensor(SensorEntity):
+    """SunSpec Voltage Sensor."""
+    def __init__(self, hass: HomeAssistant):
+        self._hass = hass
+        self._attr_unique_id = "sunspec_simulator_voltage"
+        self._attr_device_class = "voltage"
+        self._attr_unit_of_measurement = UnitOfElectricPotential.VOLT
+        self._attr_name = "SunSpec Simulated Voltage"
+        self._state = None
+
+    @property
+    def state(self):
+        return self._state
+
+    @property
+    def extra_state_attributes(self):
+        return {"friendly_name": "模擬太陽能電壓"}
+
+    async def async_update(self):
+        """Simulate voltage data."""
+        self._state = random.uniform(220, 240)  # 假電壓220-240V
+
+class SunSpecStatusSensor(BinarySensorEntity):
+    """SunSpec Status Sensor."""
+    def __init__(self, hass: HomeAssistant):
+        self._hass = hass
+        self._attr_unique_id = "sunspec_simulator_status"
+        self._attr_name = "SunSpec Simulated Status"
+        self._state = None
+
+    @property
+    def is_on(self):
+        return self._state
+
+    @property
+    def extra_state_attributes(self):
+        return {"friendly_name": "模擬太陽能狀態"}
+
+    async def async_update(self):
+        """Simulate status data."""
+        self._state = random.choice([True, False])  # 假狀態：運行或關閉
