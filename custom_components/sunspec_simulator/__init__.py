@@ -1,16 +1,21 @@
 """SunSpec Simulator Custom Component."""
 from homeassistant.core import HomeAssistant
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.helpers.discovery import async_load_platform
+from homeassistant.helpers import entity_registry as er
+from .sensor import SunSpecPowerSensor, SunSpecVoltageSensor, SunSpecStatusSensor
 
 DOMAIN = "sunspec_simulator"
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
-    """Set up SunSpec Simulator."""
-    hass.data[DOMAIN] = {}
-    return True
+    """Set up the SunSpec Simulator component."""
+    # 直接喺呢度設實體
+    sensors = [
+        SunSpecPowerSensor(hass),
+        SunSpecVoltageSensor(hass),
+        SunSpecStatusSensor(hass)
+    ]
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up SunSpec Simulator from a config entry."""
-    hass.async_create_task(async_load_platform(hass, "sensor", DOMAIN, {}, entry))
+    # 註冊實體
+    platform = hass.helpers.entity_platform.async_get_current_platform()
+    platform.async_add_entities(sensors)
+
     return True
