@@ -7,23 +7,15 @@ DOMAIN = "sunspec_simulator"
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     """Set up the SunSpec Simulator component."""
-    hass.async_create_task(
-        hass.config_entries.async_forward_entry_setup(
-            hass.config_entries.async_entries(DOMAIN)[0], "sensor"
-        )
-    )
-    hass.async_create_task(
-        hass.config_entries.async_forward_entry_setup(
-            hass.config_entries.async_entries(DOMAIN)[0], "binary_sensor"
-        )
-    )
-    return True
-
-async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities: AddEntitiesCallback):
-    """Set up SunSpec Simulator sensors."""
+    # 喺呢度直接註冊實體
     sensors = [
         SunSpecPowerSensor(hass),
         SunSpecVoltageSensor(hass),
         SunSpecStatusSensor(hass)
     ]
-    async_add_entities(sensors)
+
+    # 直接用 platform 註冊實體
+    platform = hass.helpers.entity_platform.current_platform()
+    platform.async_add_entities(sensors)
+
+    return True
