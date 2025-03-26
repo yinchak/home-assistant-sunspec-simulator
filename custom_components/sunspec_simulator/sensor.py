@@ -41,7 +41,8 @@ class SunSpecSensor(SensorEntity):
         self._attr_unique_id = f"sunspec_simulator_{sensor_type}"
         self._attr_device_class = "power" if sensor_type == "power" else "voltage" if sensor_type == "voltage" else None
         self._attr_state_class = "measurement" if sensor_type in ["power", "voltage"] else None
-
+        self._attr_entity_id = f"sensor.sunspec_simulator_{sensor_type}"  # **✅ 正確設定 entity_id**
+    
     @property
     def name(self):
         return self._name
@@ -58,6 +59,11 @@ class SunSpecSensor(SensorEntity):
     def unique_id(self):
         """提供 `entity_id`，避免 `NoEntitySpecifiedError`"""
         return self._attr_unique_id
+    
+    @property
+    def entity_id(self):
+        """確保 Home Assistant 能夠識別 `entity_id`"""
+        return self._attr_entity_id
 
     async def async_update(self):
         """生成模擬數據"""
