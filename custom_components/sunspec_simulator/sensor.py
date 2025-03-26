@@ -1,4 +1,4 @@
-"""SunSpec 模擬 Sensors."""
+"""SunSpec Simulator Sensors."""
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -11,7 +11,7 @@ DOMAIN = "sunspec_simulator"
 async def async_setup_platform(
     hass: HomeAssistant, config, async_add_entities: AddEntitiesCallback, discovery_info=None
 ):
-    """Set up SunSpec Simulator sensors."""
+    """Set up SunSpec simulator sensors."""
     sensors = [
         SunSpecSensor("Power", "W", 50, 500, "power"),
         SunSpecSensor("Voltage", "V", 220, 240, "voltage"),
@@ -60,6 +60,10 @@ class SunSpecSensor(SensorEntity):
         """提供 `unique_id`，讓 `Home Assistant` 自動分配 `entity_id`"""
         return self._attr_unique_id
 
+    async def async_added_to_hass(self):
+        """✅ 確保 `entity_id` 係 `Home Assistant` 註冊後才更新"""
+        self.async_schedule_update_ha_state(True)
+
     def generate_new_data(self):
         """🔄 生成新數據（數據每次變動）"""
         if self._status:
@@ -70,4 +74,4 @@ class SunSpecSensor(SensorEntity):
     async def async_update(self):
         """🔄 更新模擬數據"""
         self.generate_new_data()  # **✅ 先生成新數據**
-        self.async_write_ha_state()  # **✅ 確保 Home Assistant 更新**
+        self.async_schedule_update_ha_state(True)  # **✅ 確保 Home Assistant 更新**
