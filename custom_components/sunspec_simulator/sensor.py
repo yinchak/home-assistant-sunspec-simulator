@@ -13,9 +13,9 @@ async def async_setup_platform(
 ):
     """Set up SunSpec simulator sensors."""
     sensors = [
-        SunSpecSensor("Power", "W", 50, 500),
-        SunSpecSensor("Voltage", "V", 220, 240),
-        SunSpecSensor("Status", None, 0, 1, status=True),
+        SunSpecSensor("Power", "W", 50, 500, "power"),
+        SunSpecSensor("Voltage", "V", 220, 240, "voltage"),
+        SunSpecSensor("Status", None, 0, 1, "status", status=True),
     ]
 
     async_add_entities(sensors, update_before_add=True)  # **✅ 確保正確使用 async_add_entities()**
@@ -30,14 +30,17 @@ def update_sensors(sensors):
 
 class SunSpecSensor(SensorEntity):
     """通用 SunSpec Sensor"""
-    def __init__(self, name, unit, min_value, max_value, status=False):
+    def __init__(self, name, unit, min_value, max_value, sensor_type, status=False):
         self._state = None
         self._name = f"SunSpec Simulated {name}"
         self._unit = unit
         self._min = min_value
         self._max = max_value
         self._status = status
-        self._attr_unique_id = f"sunspec_simulator_{name.lower()}"
+        self._sensor_type = sensor_type
+        self._attr_unique_id = f"sunspec_simulator_{sensor_type}"
+        self._attr_device_class = "power" if sensor_type == "power" else "voltage" if sensor_type == "voltage" else None
+        self._attr_state_class = "measurement" if sensor_type in ["power", "voltage"] else None
 
     @property
     def name(self):
@@ -50,6 +53,11 @@ class SunSpecSensor(SensorEntity):
     @property
     def unit_of_measurement(self):
         return self._unit
+
+    @property
+    def unique_id(self):
+        """提供 `entity_id`，避免 `NoEntitySpecifiedError`"""
+        return self._attr_unique_id
 
     async def async_update(self):
         """生成模擬數據"""
